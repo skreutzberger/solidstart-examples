@@ -1,4 +1,12 @@
-import { For, Show, createSignal, createEffect, createResource, Suspense } from "solid-js"
+import {
+  For,
+  Show,
+  createSignal,
+  createEffect,
+  createResource,
+  Suspense,
+  useTransition
+} from "solid-js"
 import {
   Title,
   useParams,
@@ -42,7 +50,9 @@ async function fetchCharacters(source: Character[], { value, refetching }) {
     const response = await fetch(
       "https://hp-api.herokuapp.com/api/characters/house/" + refetching.house
     )
-    return await response.json()
+    const characters = await response.json()
+    // just return a random amount of characters to show a change in the length of the list
+    return characters.slice(0, Math.floor(Math.random() * characters.length))
   }
 
   const response = await fetch("https://hp-api.herokuapp.com/api/characters/")
@@ -60,19 +70,28 @@ export default function Home() {
     any
   >(initialCharacters, fetchCharacters)
 
+  const [isPending, start] = useTransition()
+
   return (
     <main>
       <Title>Flickering Demo</Title>
       <h2>Counter Rendering Example</h2>
       <Counter />
       <h2 style="margin-top: 50px;">Harry Potter Characters</h2>
-      <button class="increment" onClick={() => refetchCharacters()}>
+      <button class="increment" onClick={() => start(() => refetchCharacters())}>
         all Houses
       </button>
-      <button class="increment" onClick={() => refetchCharacters({ house: "gryffindor" })}>
+      <button
+        class="increment"
+        onClick={
+          //() => refetchCharacters({ house: "gryffindor" })
+          () => start(() => refetchCharacters({ house: "gryffindor" }))
+        }
+      >
         House Gryffindor
       </button>
-      <Suspense>
+      <p>transition is pending: {JSON.stringify(isPending())}</p>
+      <Suspense fallback={<div>loading characters ...</div>}>
         <p>loaded {characters() === undefined ? 0 : characters().length} characters</p>
         <HouseMembers characters={characters()} />
       </Suspense>
