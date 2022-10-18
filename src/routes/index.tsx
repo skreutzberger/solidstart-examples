@@ -83,10 +83,7 @@ export default function Home() {
       </button>
       <button
         class="increment"
-        onClick={
-          //() => refetchCharacters({ house: "gryffindor" })
-          () => start(() => refetchCharacters({ house: "gryffindor" }))
-        }
+        onClick={() => start(() => refetchCharacters({ house: "gryffindor" }))}
       >
         House Gryffindor
       </button>
